@@ -16,6 +16,7 @@ Users can control:
 * Color of text/symbol on screen
 * Alpha value that the text/symbol fades to over time
 * How quickly the text/symbol fades to the alpha value
+* Use a set seed or not for randomization
 
 Download and Install pre-built from BakkesMod Plugins page:
 https://bakkesplugins.com/plugins/view/403
