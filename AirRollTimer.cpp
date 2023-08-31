@@ -85,7 +85,8 @@ void AirRollTimer::onLoad()
 		});
 	cvarManager->registerCvar("airrolltimer_timer_fadea", "0", "Timer fade to alpha")
 		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
-			currentTimerFadeA = cvar.getFloatValue();
+			//currentTimerFadeA = cvar.getFloatValue();
+			currentTimerFadeA = (255.0f - cvar.getFloatValue()) / 255.0f;
 		});
 	cvarManager->registerCvar("airrolltimer_timer_fadetime", "1.5", "Alpha fade time", true, true, 1.0f, true, 120.0f)
 		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
@@ -353,6 +354,7 @@ void AirRollTimer::SetTextColors(CanvasWrapper canvas)
 
 	if (started)
 	{
+		LOG("SetTextColors: FADE STARTED");
 		if (currentTimerFadeTime > currentMaxTimer)
 		{
 			currentTimerFadeTime = currentMaxTimer; //cap the fadeTimer to the timer max value if it is larger than that value
@@ -361,10 +363,15 @@ void AirRollTimer::SetTextColors(CanvasWrapper canvas)
 		float timeNormalized = timeCurrent / currentTimerFadeTime; //get the normalized time value using fadeTimer
 		float timeCapped = std::min((timeNormalized), currentTimerFadeA); //cap the normalized time between 0.0f and the cap value
 		colors.A = 255.0f * (1.0f - timeCapped); //invert the time value such that the alpha fades from 1.0f to the cap value over time
+
+		CVarWrapper fadeTimerCvar = cvarManager->getCvar("airrolltimer_timer_fadetime");
+		if (!fadeTimerCvar) { return; }
+		float fadeTimer = fadeTimerCvar.getFloatValue();
+		LOG("SetTextColors: FADE VALUES: {}, {}, {}, {}, {}, {}", timeCurrent, currentTimerFadeTime, currentTimerFadeA, currentMaxTimer, colors.A, fadeTimer);
 	}
 	else
 	{
-		colors.A = 255;
+		colors.A = 255.0f;
 	}
 
 	canvas.SetColor(colors);
