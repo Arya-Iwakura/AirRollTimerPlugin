@@ -85,18 +85,18 @@ void AirRollTimer::onLoad()
 		});
 	cvarManager->registerCvar("airrolltimer_timer_fadea", "0", "Timer fade to alpha")
 		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
-			//currentTimerFadeA = cvar.getFloatValue();
 			currentTimerFadeA = (255.0f - cvar.getFloatValue()) / 255.0f;
 		});
 	cvarManager->registerCvar("airrolltimer_timer_fadetime", "1.5", "Alpha fade time", true, true, 1.0f, true, 120.0f)
 		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
 			currentTimerFadeTime = cvar.getFloatValue();
 		});
-	cvarManager->registerCvar("airrolltimer_random_seed", "0", "Random seed", true, true, 0, true, 10000)
+	cvarManager->registerCvar("airrolltimer_random_seedname", "", "Random seed string")
 		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
-			currentSeed = cvar.getIntValue();
+			currentSeedName = cvar.getStringValue();
+			HashSeed();
 			ResetSeed();
-		});
+			});
 
 	gameWrapper->HookEventPost("Function TAGame.Car_TA.SetVehicleInput", std::bind(&AirRollTimer::onStartedDriving, this, std::placeholders::_1));
 	gameWrapper->HookEventPost("Function TAGame.GameEvent_Soccar_TA.Destroyed", std::bind(&AirRollTimer::onMatchQuit, this, std::placeholders::_1));
@@ -312,6 +312,19 @@ void AirRollTimer::ResetSeed()
 	}
 }
 
+void AirRollTimer::HashSeed()
+{
+	if (currentSeedName != "" && currentSeedName != "0")
+	{
+		std::hash<std::string> hasher;
+		int hashedString = (int)hasher(currentSeedName);
+		currentSeed = hashedString;
+		return;
+	}
+	currentSeed = 0;
+	return;
+}
+
 void AirRollTimer::Render(CanvasWrapper canvas)
 {
 	if (!gameWrapper->IsInFreeplay())
@@ -354,7 +367,6 @@ void AirRollTimer::SetTextColors(CanvasWrapper canvas)
 
 	if (started)
 	{
-		LOG("SetTextColors: FADE STARTED");
 		if (currentTimerFadeTime > currentMaxTimer)
 		{
 			currentTimerFadeTime = currentMaxTimer; //cap the fadeTimer to the timer max value if it is larger than that value
@@ -367,7 +379,6 @@ void AirRollTimer::SetTextColors(CanvasWrapper canvas)
 		CVarWrapper fadeTimerCvar = cvarManager->getCvar("airrolltimer_timer_fadetime");
 		if (!fadeTimerCvar) { return; }
 		float fadeTimer = fadeTimerCvar.getFloatValue();
-		LOG("SetTextColors: FADE VALUES: {}, {}, {}, {}, {}, {}", timeCurrent, currentTimerFadeTime, currentTimerFadeA, currentMaxTimer, colors.A, fadeTimer);
 	}
 	else
 	{
@@ -413,7 +424,7 @@ void AirRollTimer::RenderSettings()
 	SetSliderIntCvarSettings("airrolltimer_timer_colorb", 0, 255, "Text Color B", "Timer text color B is ", "");
 	SetSliderIntCvarSettings("airrolltimer_timer_fadea", 0, 255, "Text Fade Alpha", "Timer fade to alpha time is ", "");
 	
-	SetSliderIntCvarSettings("airrolltimer_random_seed", 0, 10000, "Random Seed Number", "Seed is ", ". Set to zero for a random seed.");
+	SetInputTextCVarSettings("airrolltimer_random_seedname", "", "Set to nothing or 0 for a random seed.");
 }
 
 void AirRollTimer::SetBoolCvarSettings(std::string cvarString, std::string descriptionText, std::string toolTipText)
@@ -423,6 +434,20 @@ void AirRollTimer::SetBoolCvarSettings(std::string cvarString, std::string descr
 	bool boolValue = cvar.getBoolValue();
 	if (ImGui::Checkbox(descriptionText.c_str(), &boolValue)) {
 		cvar.setValue(boolValue);
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip(toolTipText.c_str());
+	}
+}
+
+void AirRollTimer::SetInputTextCVarSettings(std::string cvarString, std::string descriptionText, std::string toolTipText)
+{
+	CVarWrapper cvar = cvarManager->getCvar(cvarString);
+	if (!cvar) { return; }
+	std::string stringValue = cvar.getStringValue();
+	if (ImGui::InputText(descriptionText.c_str(), &stringValue))
+	{
+		cvar.setValue(stringValue);
 	}
 	if (ImGui::IsItemHovered()) {
 		ImGui::SetTooltip(toolTipText.c_str());

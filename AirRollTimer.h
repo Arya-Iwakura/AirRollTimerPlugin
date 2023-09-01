@@ -36,6 +36,7 @@ private:
 	bool isPluginEnabled = false;
 	bool shouldUseSymbols = true;
 	int currentSeed = 0;
+	std::string currentSeedName = "";
 	float currentMinTimer = 0.0f;
 	float currentMaxTimer = 0.0f;
 	float currentTimerPosX = 0.0f;
@@ -54,6 +55,7 @@ private:
 
 	void ResetValues();
 	void ResetSeed();
+	void HashSeed();
 	void CheckAddDirection(std::string cvarString, std::string directionTextName, std::string directionSymbolName, bool useSymbols);
 	void SetInitialDirections();
 	int GetRandomDirectionFromWeights();
@@ -61,6 +63,7 @@ private:
 	void SetInitialWeights();
 	void SetTextColors(CanvasWrapper canvas);
 	void SetBoolCvarSettings(std::string cvarString, std::string descriptionText, std::string toolTipText);
+	void SetInputTextCVarSettings(std::string cvarString, std::string descriptionText, std::string toolTipText);
 	void SetSliderFloatCvarSettings(std::string cvarString, float min, float max, std::string descriptionText, std::string toolTipText1, std::string toolTipText2);
 	void SetSliderIntCvarSettings(std::string cvarString, int min, int max, std::string descriptionText, std::string toolTipText1, std::string toolTipText2);
 	int32_t RandRange(int32_t min, int32_t max, int inRandomSeed);
